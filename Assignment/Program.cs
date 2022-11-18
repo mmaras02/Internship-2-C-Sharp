@@ -81,19 +81,20 @@ namespace SportApp
 
 
         static void Menu1()
-        {
+        {   
             Console.WriteLine("\n\n-----------Statistics Menu-------------\n");
-            Console.WriteLine("1.Ispis onako kako su spremljeni\n" +
-            "2.Ispis po rating uzlazno\n" +
-            "3.Ispis po ratingu silazno\n" +
-            "4.Ispis igrača po imenu i prezimenu\n" +
-            "5.Ispis igrača po ratingu\n" +
-            "6.Ispis igrača po poziciji\n" +
-            "7.Ispis trenutnih prvih 11 igrača\n" +
-            "8.Ispis strijelaca i njihovih golova\n" +
-            "9.Ispis svih rezultata ekipe\n" +
-            "10.Ispis rezultat svih ekipa\n" +
-            "11.Ispis tablice grupe\n"+"0.Go back\n");
+            Console.WriteLine("Welcome to statistics .Choose which action you want to make:\n");
+            Console.WriteLine("1.Print in order\n" +
+            "2.Print by rating ascending\n" +
+            "3.Print by rating descending\n" +
+            "4.Find players by name\n" +
+            "5.Find players by rating\n" +
+            "6.Find players by position\n" +
+            "7.Print current team\n" +
+            "8.Print shooters and goals\n" +
+            "9.Print team score\n" +
+            "10.Print all scores\n" +
+            "11.Print team tables\n"+"0.Go back\n");
         }
         static void Options()
         {
@@ -115,8 +116,8 @@ namespace SportApp
             var lastName = Console.ReadLine();
             var fullName = firstName.Trim() + " " + lastName.Trim();
 
-            if (fullName == " "){
-                return "Wrong input!Try again!\n";
+            if (fullName == ""){
+                return "try again!";
             }
 
             return fullName;
@@ -205,130 +206,135 @@ namespace SportApp
 
         static void PlayGame(Dictionary<string, (string position, int rating)> dictionary,List<(string home, string away, string result)>result,Dictionary<string, int> shooters,Dictionary<string, (int points, int goalDifference)> teamTable)
         {
+
             Console.Clear();
             Random random = new Random();
        
             List<string>opponentss=new List<string>(){
                 {"Canada"}, {"Morocco"}, {"Belgium" }
             };
+            //var kolo=0;
             var opponents=opponentss.ToArray();
-            //string[] opponents = { "Canada", "Morocco", "Belgium" };
-            var index1 = random.Next(opponents.Length);
-            var opponent = opponents[index1];
+            for (int kolo=0;kolo<3;kolo++){
+                Console.WriteLine($"=========Round {kolo+1}=========");
+                var index1 = random.Next(opponents.Length);
+                var opponent = opponents[index1];
+        
+                //popravit ovo
+                var team1="";
+                var team2="";
+                if(index1.Equals(0)){
+                    team1=opponents[1];
+                    team2=opponents[2];
+                }
+                else if(index1.Equals(1)){
+                    team1=opponents[0];
+                    team2=opponents[2];
+                }
+                else{
+                    team1=opponents[0];
+                    team2=opponents[1];
+                }
+
+                Console.WriteLine($"Croatia playing against {opponent}!\n");
+                var team = ChooseTeam(dictionary);
+                if (team.Count == 11)
+                {
+                    var homeScore = random.Next(0, 5);
+                    var awayScore = random.Next(0, 5);
+                    Console.WriteLine($"Score after the game: {homeScore}:{awayScore}");
+
+                    var homePoints = 0;
+                    var awayPoints = 0;
+
+                    if (homeScore > awayScore)
+                    {
+                        homePoints = 3;
+                        awayPoints = 0;
+
+                        //svakom igracu se povećava rating za 2% 
+                        foreach (var person in team)
+                        {
+                            dictionary[person.Key] = (person.Value.position, (int)((person.Value.rating * 0.02)+person.Value.rating));
+                        }
+                        Console.WriteLine("Croatia won!\n");
+                    }
+                    else if (homeScore < awayScore)
+                    {
+                        homePoints = 0;
+                        awayPoints = 3;
+
+                        //svakom igracu se smanjuje rating za 2%
+                        foreach (var person in team)
+                        {
+                            dictionary[person.Key] = (person.Value.position, (int)(person.Value.rating-(person.Value.rating * (0.02))));
+                        }
+                        Console.WriteLine($"{opponent} won!");
+                    }
+                    else
+                    {//izjednaceni
+                        homePoints = 1;
+                        awayPoints = 1;
     
-            //popravit ovo
-            var team1="";
-            var team2="";
-            if(index1.Equals(0)){
-                team1=opponents[1];
-                team2=opponents[2];
-            }
-            else if(index1.Equals(1)){
-                team1=opponents[0];
-                team2=opponents[2];
-            }
-            else{
-                team1=opponents[0];
-                team2=opponents[1];
-            }
+                    }
+                    result.Add(("Croatia",opponent,$"{homeScore}:{awayScore}"));
+                    //add points to table
+                    teamTable["Croatia"] = (teamTable["Croatia"].points + homePoints, teamTable["Croatia"].goalDifference + (homeScore - awayScore));
+                    teamTable[opponent] = (teamTable[opponent].points + homePoints, teamTable[opponent].goalDifference + (awayScore - homeScore));
 
-            Console.WriteLine($"Croatia playing against {opponent}!\n");
-            var team = ChooseTeam(dictionary);
-            if (team.Count == 11)
-            {
-                var homeScore = random.Next(0, 5);
-                var awayScore = random.Next(0, 5);
-                Console.WriteLine($"Score after the game: {homeScore}:{awayScore}");
-
-                var homePoints = 0;
-                var awayPoints = 0;
-
-                if (homeScore > awayScore)
-                {
-                    homePoints = 3;
-                    awayPoints = 0;
-
-                    //svakom igracu se povećava rating za 2% 
-                    foreach (var person in team)
+                    //odvojit imena od poz i rat
+                    Console.WriteLine("List of croatian shooters: ");
+                    for (int i = 0; i < homeScore; i++)
                     {
-                        dictionary[person.Key] = (person.Value.position, (int)((person.Value.rating * 0.02)+person.Value.rating));
+                        var index = random.Next(team.Count);
+                        var names = team.Keys.ToList();
+                        Console.WriteLine($"{names[index]}");//dodaj mu rating
+                        var item=names[index];
+                        dictionary[item]=(dictionary[item].position,dictionary[item].rating+(int)(double)(dictionary[item].rating*0.05));
+                        if(shooters.ContainsKey(names[index])==false){
+                            shooters.Add(names[index],1);
+                        }
+                        else{
+                            shooters[names[index]]++;
+                        }
+                            
                     }
-                    Console.WriteLine("Croatia won!\n");
-                }
-                else if (homeScore < awayScore)
-                {
-                    homePoints = 0;
-                    awayPoints = 3;
 
-                    //svakom igracu se smanjuje rating za 2%
-                    foreach (var person in team)
+                    Console.WriteLine("---------------------------------------");
+                    Console.WriteLine($"\n{team1} playing against {team2}!\n");
+                    var score1 = random.Next(0, 5);
+                    var score2 = random.Next(0, 5);
+                    Console.WriteLine($"Score after the game: {score1}:{score2}\n");
+                
+                    var points1 = 0;
+                    var points2 = 0;
+
+                    if (score1 > score2)
                     {
-                        dictionary[person.Key] = (person.Value.position, (int)(person.Value.rating-(person.Value.rating * (0.02))));
+                        points1 = 3;
+                        points2 = 0;
+                        Console.WriteLine($" {team1} won!\n");
                     }
-                    Console.WriteLine($"{opponent} won!");
-                }
-                else
-                {//izjednaceni
-                    homePoints = 1;
-                    awayPoints = 1;
-                    //Console.WriteLine("Tied");
-                }
-                result.Add(("Croatia",opponent,$"{homeScore}:{awayScore}"));
-                //add points to table
-                teamTable["Croatia"] = (teamTable["Croatia"].points + homePoints, teamTable["Croatia"].goalDifference + (homeScore - awayScore));
-                teamTable[opponent] = (teamTable[opponent].points + homePoints, teamTable[opponent].goalDifference + (awayScore - homeScore));
+                    else if (score1 < score2)
+                    {
+                        points1 = 0;
+                        points2 = 3;
+                        Console.WriteLine($" {team2} won!\n");
 
-                //odvojit imena od poz i rat
-                Console.WriteLine("List of croatian shooters: ");
-                for (int i = 0; i < homeScore; i++)
-                {
-                    var index = random.Next(team.Count);
-                    var names = team.Keys.ToList();
-                    Console.WriteLine($"{names[index]}");//dodaj mu rating
-                    var item=names[index];
-                    dictionary[item]=(dictionary[item].position,dictionary[item].rating+(int)(double)(dictionary[item].rating*0.05));
-                    if(shooters.ContainsKey(names[index])==false){
-                        shooters.Add(names[index],1);
                     }
-                    else{
-                        shooters[names[index]]++;
+                    else
+                    {//izjednaceni
+                        points1 = 1;
+                        points2 = 1;
                     }
-                        
+                    result.Add((team1,team2,$"{score1}:{score2}"));
+                
+                    teamTable[team1] = (teamTable[team1].points + points1, teamTable[team1].goalDifference + (score1 - score2));
+                    teamTable[team2] = (teamTable[team2].points + points2, teamTable[team2].goalDifference + (score2 - score1));
+                    
                 }
-
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine($"\n{team1} playing against {team2}!\n");
-                var score1 = random.Next(0, 5);
-                var score2 = random.Next(0, 5);
-                Console.WriteLine($"Score after the game: {score1}:{score2}\n");
-            
-                var points1 = 0;
-                var points2 = 0;
-
-                if (score1 > score2)
-                {
-                    points1 = 3;
-                    points2 = 0;
-                    Console.WriteLine($" {team1} won!\n");
-                }
-                else if (score1 < score2)
-                {
-                    points1 = 0;
-                    points2 = 3;
-                    Console.WriteLine($" {team2} won!\n");
-
-                }
-                else
-                {//izjednaceni
-                    points1 = 1;
-                    points2 = 1;
-                }
-                result.Add((team1,team2,$"{score1}:{score2}"));
-               
-                teamTable[team1] = (teamTable[team1].points + points1, teamTable[team1].goalDifference + (score1 - score2));
-                teamTable[team2] = (teamTable[team2].points + points2, teamTable[team2].goalDifference + (score2 - score1));
+                else Console.WriteLine("Not enough players in the team!\n");
             }
-            else Console.WriteLine("Not enough players in the team!\n");
 
         }
 
@@ -340,6 +346,7 @@ namespace SportApp
                 return;
             do
             {
+            
                 Menu1();
                 menu = Console.ReadLine();
                 switch (menu)
@@ -444,14 +451,15 @@ namespace SportApp
                     case "11":
                         //neka tablica
                         Console.Clear();
-                        Console.WriteLine("Country  Points  Goal Difference");
+                        Console.WriteLine("Country\t    Points\tGoal Difference");
                         foreach (var item in teamTable)
                         {
-                            Console.WriteLine($" {item.Key}\t{item.Value.points}\t{Math.Abs(item.Value.goalDifference)}\n");
+                            Console.WriteLine($"{item.Key}\t\t{item.Value.points}\t\t{Math.Abs(item.Value.goalDifference)}");
                 
                         }
                         break;
                     default:
+                        Console.Clear();
                         break;
                 }
             } while (menu!="0");
@@ -487,13 +495,15 @@ namespace SportApp
                         ChangePlayer(dictionary);
                         break;
                     default:
+                        Console.Clear();
                         option = null;
                         break;
                 }
 
             } 
             else{
-                Options();
+                Console.Clear();
+                //Options();
             }
             return;
 
@@ -505,18 +515,20 @@ namespace SportApp
             var fullName = GetName();
 
             Console.WriteLine("Enter player position(GK,MF,FW,DF):");
-            var playerPosition = Console.ReadLine();
-            if (playerPosition.Equals("GK") && playerPosition.Equals("DF") && playerPosition.Equals("MF") && playerPosition.Equals("FW"))
+            var playerPosition = Console.ReadLine().ToUpper();
+            if (!playerPosition.Equals("GK") || !playerPosition.Equals("DF") || !playerPosition.Equals("MF") || !playerPosition.Equals("FW"))
             {
                 Console.WriteLine("Incorrect position!Try again!");
-                playerPosition = Console.ReadLine();
+                return;
             }
 
             var playerRating = 0;
             Console.WriteLine("Enter player rating(range:1-100):");
             int.TryParse(Console.ReadLine(), out playerRating);
-            if (playerRating < 1 || playerRating > 100) Console.WriteLine("Incorrect rating!Try again!");
-    
+            if (playerRating < 1 || playerRating > 100){
+                Console.WriteLine("Incorrect rating!Try again!");
+                return;
+            }
             if (dictionary.Count < 26)
             {
                 foreach (var person in dictionary)
@@ -569,10 +581,11 @@ namespace SportApp
             bool flag = false;
             string choice = null;
 
-            Console.WriteLine("1-Change player name and surname\n" +
-                "2-Change player position\n" +
-                "3-Change player rating\n" +
-                "0-Go back");
+            Console.WriteLine("You choose to change player! Enter the change you want to make\n");
+            Console.WriteLine("1.Change player name and surname\n" +
+                "2.Change player position\n" +
+                "3.Change player rating\n" +
+                "0.Go back");
             choice = Console.ReadLine();
 
             if (choice == "1")
