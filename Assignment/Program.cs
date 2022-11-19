@@ -48,7 +48,6 @@ namespace SportApp
 
                 Options();
                 choice = Console.ReadLine();
-                var kolo=0;
 
                 switch (choice)
                 {
@@ -116,11 +115,8 @@ namespace SportApp
             var lastName = Console.ReadLine();
             var fullName = firstName.Trim() + " " + lastName.Trim();
 
-            if (fullName == ""){
-                return "try again!";
-            }
-
             return fullName;
+
         }
         static void AttendPractice(Dictionary<string, (string position, int rating)> dictionary)
         {
@@ -138,6 +134,7 @@ namespace SportApp
                 Console.WriteLine("");
                 dictionary[person.Key]=(person.Value.position,newRating);//adding the new rating to the player(not sure)check again
             }
+            Console.WriteLine("Practice compleated!\n");
             //return;       
         }
         static Dictionary<string, (string position, int rating)> ChooseTeam(Dictionary<string, (string position, int rating)> dictionary)
@@ -216,9 +213,11 @@ namespace SportApp
             //var kolo=0;
             var opponents=opponentss.ToArray();
             for (int kolo=0;kolo<3;kolo++){
+                
                 Console.WriteLine($"=========Round {kolo+1}=========");
                 var index1 = random.Next(opponents.Length);
                 var opponent = opponents[index1];
+            
         
                 //popravit ovo
                 var team1="";
@@ -513,10 +512,15 @@ namespace SportApp
             bool flag = true;
             Console.Clear();
             var fullName = GetName();
+            if(fullName.Length==1){
+                Console.WriteLine("Name not valid!\n");
+                return;
+            }
 
             Console.WriteLine("Enter player position(GK,MF,FW,DF):");
             var playerPosition = Console.ReadLine().ToUpper();
-            if (!playerPosition.Equals("GK") || !playerPosition.Equals("DF") || !playerPosition.Equals("MF") || !playerPosition.Equals("FW"))
+            if (!playerPosition.Equals("MF") && !playerPosition.Equals("FW") && !playerPosition.Equals("DF") &&!playerPosition.Equals("GK"))
+
             {
                 Console.WriteLine("Incorrect position!Try again!");
                 return;
