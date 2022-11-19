@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SportApp
 {
     class Program
     {
+
         static void Main(string[] args)
         {
+
             Console.Clear();
             string choice = null;
 
+            List<(string home, string away, string result)>result=new List<(string home, string away, string result)>();
+            var shooters=new Dictionary<string,int>();
             var dictionary = new Dictionary<string, (string position, int rating)>(){
             {"Luka Modric", ("MF", 88)},
             {"Marcelo Brozovic",("MF",86)},
@@ -41,8 +46,7 @@ namespace SportApp
             {"Belgium",(0,0) },
             {"Canada",(0,0) }
         };
-        List<(string home, string away, string result)>result=new List<(string home, string away, string result)>();
-        var shooters=new Dictionary<string,int>();
+        
             do
             {
 
@@ -57,8 +61,9 @@ namespace SportApp
                         break;
                     case "2":
                         Console.Clear();
-                        //dodaj kola jos
                         PlayGame(dictionary,result,shooters,teamTable);
+                        Console.WriteLine("All games played!\n");
+
                         break;
                     case "3":
                         Console.Clear();
@@ -82,7 +87,7 @@ namespace SportApp
         static void Menu1()
         {   
             Console.WriteLine("\n\n-----------Statistics Menu-------------\n");
-            Console.WriteLine("Welcome to statistics .Choose which action you want to make:\n");
+            Console.WriteLine("Welcome to statistics. Choose which action you want to make:\n");
             Console.WriteLine("1.Print in order\n" +
             "2.Print by rating ascending\n" +
             "3.Print by rating descending\n" +
@@ -98,7 +103,7 @@ namespace SportApp
         static void Options()
         {
             Console.WriteLine("------------Main Menu------------\n");
-            Console.WriteLine("Welcome to main menu.Choose which action you want to make:");
+            Console.WriteLine("Welcome to main menu. Choose which action you want to make:");
             Console.WriteLine("1.Attend practice\n"+"2.Play game\n"+"3.Statistics\n"+"4.Control Player\n"+"0.Exit app");
         }
         static string AskName()
@@ -120,8 +125,6 @@ namespace SportApp
         }
         static void AttendPractice(Dictionary<string, (string position, int rating)> dictionary)
         {
-            //random function to connect percentages to players
-            //dodat poc
             Console.Clear();
             Random rnd = new Random();
             foreach (var person in dictionary)
@@ -132,10 +135,9 @@ namespace SportApp
                 string value = $"{person.Key}({person.Value.position})\nold rating:{oldPlayerRating}\nnew rating:{newRating}\n";
                 Console.WriteLine(value);
                 Console.WriteLine("");
-                dictionary[person.Key]=(person.Value.position,newRating);//adding the new rating to the player(not sure)check again
+                dictionary[person.Key]=(person.Value.position,newRating);//adding the new rating to the player
             }
-            Console.WriteLine("Practice compleated!\n");
-            //return;       
+            Console.WriteLine("Practice compleated!\n");       
         }
         static Dictionary<string, (string position, int rating)> ChooseTeam(Dictionary<string, (string position, int rating)> dictionary)
         {
@@ -187,7 +189,6 @@ namespace SportApp
                     }
                 }
             }
-            //PrintDictionary(teamDict);
             return teamDict;
         }
         
@@ -200,31 +201,39 @@ namespace SportApp
             }
             return list;
         }
-
+    
         static void PlayGame(Dictionary<string, (string position, int rating)> dictionary,List<(string home, string away, string result)>result,Dictionary<string, int> shooters,Dictionary<string, (int points, int goalDifference)> teamTable)
         {
-
             Console.Clear();
             Random random = new Random();
-       
+
             List<string>opponentss=new List<string>(){
                 {"Canada"}, {"Morocco"}, {"Belgium" }
             };
-            //var kolo=0;
-            var opponents=opponentss.ToArray();
-            for (int kolo=0;kolo<3;kolo++){
-                
-                Console.WriteLine($"=========Round {kolo+1}=========");
-                var index1 = random.Next(opponents.Length);
-                var opponent = opponents[index1];
+
+            List<int>checkList=new List<int>();
             
-        
+            var temp=-1;
+            var opponents=opponentss.ToArray();
+            for (int kolo=0;kolo<3;kolo++)
+            {   
+                Console.WriteLine($"=========Round {kolo+1}=========");
+
+                var index1=-1;
+                do
+                {
+                    index1 = random.Next(opponents.Length);
+
+                }while(index1==temp||checkList.Contains(index1));
+                var opponent = opponents[index1];
+                
                 //popravit ovo
                 var team1="";
                 var team2="";
                 if(index1.Equals(0)){
                     team1=opponents[1];
                     team2=opponents[2];
+
                 }
                 else if(index1.Equals(1)){
                     team1=opponents[0];
@@ -268,7 +277,7 @@ namespace SportApp
                         {
                             dictionary[person.Key] = (person.Value.position, (int)(person.Value.rating-(person.Value.rating * (0.02))));
                         }
-                        Console.WriteLine($"{opponent} won!");
+                        Console.WriteLine($"{opponent} won!\n");
                     }
                     else
                     {//izjednaceni
@@ -281,7 +290,7 @@ namespace SportApp
                     teamTable["Croatia"] = (teamTable["Croatia"].points + homePoints, teamTable["Croatia"].goalDifference + (homeScore - awayScore));
                     teamTable[opponent] = (teamTable[opponent].points + homePoints, teamTable[opponent].goalDifference + (awayScore - homeScore));
 
-                    //odvojit imena od poz i rat
+                
                     Console.WriteLine("List of croatian shooters: ");
                     for (int i = 0; i < homeScore; i++)
                     {
@@ -298,12 +307,11 @@ namespace SportApp
                         }
                             
                     }
-
                     Console.WriteLine("---------------------------------------");
                     Console.WriteLine($"\n{team1} playing against {team2}!\n");
                     var score1 = random.Next(0, 5);
                     var score2 = random.Next(0, 5);
-                    Console.WriteLine($"Score after the game: {score1}:{score2}\n");
+                    Console.WriteLine($"Score after the game: {score1}:{score2}");
                 
                     var points1 = 0;
                     var points2 = 0;
@@ -330,12 +338,14 @@ namespace SportApp
                 
                     teamTable[team1] = (teamTable[team1].points + points1, teamTable[team1].goalDifference + (score1 - score2));
                     teamTable[team2] = (teamTable[team2].points + points2, teamTable[team2].goalDifference + (score2 - score1));
-                    
+
+
+                    temp=index1;
+                    checkList.Add(temp);
                 }
                 else Console.WriteLine("Not enough players in the team!\n");
             }
-
-        }
+        } 
 
         static void SortAndPrint(Dictionary<string, (string position, int rating)> dictionary,List<(string home, string away, string result)>result,Dictionary<string, int> shooters,Dictionary<string, (int points, int goalDifference)> teamTable)
         {
@@ -392,7 +402,7 @@ namespace SportApp
                             Console.WriteLine("Player not found!");
                         }
                         break;
-                    case "5"://Ispis igrača po ratingu
+                    case "5":
                         Console.Clear();
                         var wantedRating = 0;
                         Console.WriteLine("Enter the rating you want to find players with");
@@ -405,7 +415,6 @@ namespace SportApp
                         }
                         break;
                     case "6":
-                        //ispisati igraca po trazenoj poziciji
                         Console.Clear();
                         Console.WriteLine("Enter the position you want to find players with");
                         var wantedPosition = Console.ReadLine();
@@ -421,7 +430,6 @@ namespace SportApp
                         PrintDictionary(ChooseTeam(dictionary));
                         break;
                     case "8":
-                        //ispis strijelaca i nj golovi
                         Console.Clear();
                         Console.WriteLine("Shooters are:");
                         foreach(var person in shooters)
@@ -437,7 +445,6 @@ namespace SportApp
                                 Console.WriteLine($"{item.home}-{item.away}  {item.result}");
                             }
                         }
-                        //nasi rezultati
                         break;
                     case "10":
                         Console.Clear();
@@ -445,10 +452,8 @@ namespace SportApp
                         {
                             Console.WriteLine($"{item.home} {item.result} {item.away}");
                         }
-                        //rezultati svih ekipa
                         break;
                     case "11":
-                        //neka tablica
                         Console.Clear();
                         Console.WriteLine("Country\t    Points\tGoal Difference");
                         foreach (var item in teamTable)
@@ -502,7 +507,6 @@ namespace SportApp
             } 
             else{
                 Console.Clear();
-                //Options();
             }
             return;
 
