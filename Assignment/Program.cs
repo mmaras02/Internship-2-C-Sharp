@@ -141,55 +141,30 @@ namespace SportApp
         }
         static Dictionary<string, (string position, int rating)> ChooseTeam(Dictionary<string, (string position, int rating)> dictionary)
         {
-            var sorted = from person in dictionary orderby person.Value.rating descending select person;
+            var sortedDictionary = from person in dictionary orderby person.Value.rating descending select person;
+            int GK = 0, DF = 0, MF = 0, FW = 0;
             var teamDict = new Dictionary<string, (string position, int rating)>();
+            foreach (var person in sortedDictionary)
+            {
+                if (person.Value.position == "GK" && GK < 1){
+                    teamDict.Add(person.Key,person.Value);
+                    GK++;
+                }
+                else if (person.Value.position == "DF" && DF < 4){
+                    teamDict.Add(person.Key,person.Value);
+                    DF++;
+                }
+                else if (person.Value.position == "FW" && FW < 3){
+                    teamDict.Add(person.Key,person.Value);
+                    FW++;
+                }
+                else if (person.Value.position == "MF" && MF < 3){
+                    teamDict.Add(person.Key,person.Value);
+                    MF++;
+                }
 
-            foreach (var person in sorted)
-            {
-                if (person.Value.position == "GK")
-                {
-                    teamDict.Add(person.Key, person.Value);
-                    dictionary.Remove(person.Key);
-                    break;
-                }
             }
-            for (int i = 0; i < 4; i++)
-            {
-                foreach (var person in sorted)
-                {
-                    if (person.Value.position == "DF")
-                    {
-                        teamDict.Add(person.Key, person.Value);
-                        dictionary.Remove(person.Key);
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                foreach (var person in sorted)
-                {
-                    if (person.Value.position == "MF")
-                    {
-                        teamDict.Add(person.Key, person.Value);
-                        dictionary.Remove(person.Key);
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                foreach (var person in sorted)
-                {
-                    if (person.Value.position == "FW")
-                    {
-                        teamDict.Add(person.Key, person.Value);
-                        dictionary.Remove(person.Key);
-                        break;
-                    }
-                }
-            }
-            return teamDict;
+             return teamDict;
         }
         
         static List<(string, string, int)> makeList(Dictionary<string, (string, int)> dictionary)
@@ -423,6 +398,7 @@ namespace SportApp
                         {
                             if (wantedPosition == person.Value.position)
                                 Console.WriteLine($"{person.Key}({person.Value.position})--{person.Value.rating}");
+                            else Console.WriteLine("Player not in a dictionary!\n");
                         }
                         break;
                     case "7":
@@ -604,6 +580,10 @@ namespace SportApp
                 {
                     Console.WriteLine("\nNow enter new information");
                     var newName = GetName();
+                    if(newName.Length==1){
+                        Console.WriteLine("Invalid input! Try again!\n");
+                        return;
+                    }
 
                     if (!dictionary.ContainsKey(newName))
                     {
@@ -620,6 +600,11 @@ namespace SportApp
 
                 Console.WriteLine("Please enter new position:");
                 var newPosition = Console.ReadLine();
+                if (!newPosition.Equals("MF") && !newPosition.Equals("FW") && !newPosition.Equals("DF") &&!newPosition.Equals("GK"))
+                {
+                    Console.WriteLine("Incorrect position!Try again!");
+                    return;
+                }
 
                 foreach (var person in dictionary)
                 {
@@ -630,15 +615,22 @@ namespace SportApp
 
             else if (choice == "3")
             {
+                var newRating=0;
                 var nameToChange = AskName();
 
+
                 Console.WriteLine("Please enter new rating");
-                var newRating = Console.ReadLine();
+                int.TryParse(Console.ReadLine(), out newRating);
+                if (newRating < 1 || newRating > 100)
+                {
+                    Console.WriteLine("Incorrect rating!Try again!");
+                    return;
+                }
 
                 foreach (var person in dictionary)
                 {
                     if (nameToChange == person.Key)
-                        dictionary[nameToChange] = (person.Value.position, int.Parse(newRating));
+                        dictionary[nameToChange] = (person.Value.position, newRating);
                 }
             }
 
@@ -655,9 +647,10 @@ namespace SportApp
         {
             foreach (var item in dictionary)
             {
-                Console.WriteLine($"{item.Key}, pozicija {item.Value.position} i rating {item.Value.rating}");
+                Console.WriteLine($"{item.Key}({item.Value.position})  Rating {item.Value.rating}");
             }
             Console.WriteLine(" ");
         }
+
 }
 }
